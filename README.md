@@ -1,7 +1,7 @@
 # Blink Reminder
 Eye strain is a big problem for people who look at a computer screen all day. One of the biggest causes of eyestrain is being so focused on the screen that you forget to blink. A healthy person blinks 10-15 times a minute, but computer users can be observed to have up to a 80% reduction in blink rate. 
 
-This program attempts to notify the user through a sound alert if it detects the user hasn't blinked in an extended period of time (8 seconds by default).
+This program uses facial recognition to notify the user through a sound alert if it detects the user hasn't blinked in an extended period of time (8 seconds by default).
 
 Face, glasses, left eye, and right eye detection uses [OpenCV with Haar Cascade Classifiers](https://github.com/opencv/opencv/tree/master/data/haarcascades), and the program uses [Jordan Van Eetveldt's pre-trained model](https://github.com/Guarouba/face_rec) to classify whether an eye appears to be opened or closed. 
 
