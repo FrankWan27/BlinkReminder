@@ -33,9 +33,8 @@ Face, glasses, left eye, and right eye detection uses [OpenCV with Haar Cascade 
 To start running the application, run in the parent directory
  
  ```python blinkreminder.py```
- 
- Use W and S to increase or decrease the blink reminder timer. 
- Use + and - to increase the videostream size. (Impacts detection accuracy at the cost of performance)
+- Use W and S to increase or decrease the blink reminder timer. 
+- Use + and - to increase the videostream size. (Impacts detection accuracy at the cost of performance)
 
 ## Authors
 
