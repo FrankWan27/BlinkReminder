@@ -28,23 +28,32 @@ def detectEyes(webcam, scale, model, faceClassifier, glassesClassifier, leftEyeC
     frame = cv2.resize(frame, (0, 0), fx=scale, fy=scale)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faceSize = ((int)(100 * scale), (int)(100 * scale))
+    eyeSize = ((int)(15 * scale), (int)(15 * scale))
 
     # Detect faces
-    facesTemp = faceClassifier.detectMultiScale(
-        gray,
-        scaleFactor=1.1,
-        minNeighbors=2,
-        minSize=faceSize,
-    )
+    facesTemp = faceClassifier.detectMultiScale(gray, 1.1, 2, minSize=faceSize)
 
     # if we lose face tracking, we keep a persistant frame
     if len(facesTemp) > 0:
         faces = facesTemp
 
     for (x,y,w,h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+        #draw face frame
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
+        #used for drawing
+        face = frame[y:y+h,x:x+w]
+        #used for classification
+        faceGray = gray[y:y+h,x:x+w]
 
+        glasses = glassesClassifier.detectMultiScale(faceGray, 1.1, 3, minSize=eyeSize)
+
+        if len(glasses) > 0:
+                #draw eye frame
+                for (ex,ey,ew,eh) in glasses:
+                    cv2.rectangle(face, (ex,ey), (ex+ew,ey+eh), (255, 255, 255), 2)
+
+        
 
     return frame
 
