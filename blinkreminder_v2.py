@@ -5,7 +5,6 @@ import sys
 import os
 from imutils.video import VideoStream
 from PIL import Image
-from keras.models import model_from_json
 
 # PyInstaller adds this attribute
 if getattr(sys, 'frozen', False):
@@ -20,18 +19,6 @@ faces = []
 lastBlink = time.perf_counter()
 lastPing = 0
 
-
-
-def loadModel():
-    #Model structure and weights from https://github.com/Guarouba/face_rec
-    modelJSON = open(os.path.join(currentPath, 'data/model.json'), 'r')
-    modelStructure = modelJSON.read()
-    modelJSON.close()
-    model = model_from_json(modelStructure)
-    model.load_weights(os.path.join(currentPath, 'data/model.h5'))
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
-
 def loadClassifiers():
     faceClassifier = cv2.CascadeClassifier(os.path.join(currentPath, 'data/haarcascade_frontalface_alt.xml'))
     glassesClassifier = cv2.CascadeClassifier(os.path.join(currentPath, 'data/haarcascade_eye_tree_eyeglasses.xml'))
@@ -39,15 +26,7 @@ def loadClassifiers():
     rightEyeClassifier = cv2.CascadeClassifier(os.path.join(currentPath, 'data/haarcascade_righteye_2splits.xml'))
     return (faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier)
 
-def predict(img, model):
-    img = Image.fromarray(img, 'RGB').convert('L')
-    img = np.array(img.resize((24, 24))).astype('float32')
-    img /= 255
-    img = img.reshape(1, 24, 24, 1)
-    prediction = model.predict(img)
-    return prediction
-
-def detectEyes(webcam, scale, threshold, model, faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier):
+def detectEyes(webcam, scale, threshold, faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier):
     global faces
     global lastBlink
     global lastPing
@@ -75,48 +54,15 @@ def detectEyes(webcam, scale, threshold, model, faceClassifier, glassesClassifie
         faceGray = gray[y:y+h,x:x+w]
 
         #check if detected eye in glasses
-        glasses = glassesClassifier.detectMultiScale(faceGray, 1.2, 5, minSize=eyeSize)
+        glasses = glassesClassifier.detectMultiScale(faceGray, 1.1, 1, minSize=eyeSize)
 
         if len(glasses) > 0:
             #draw eye frame
             for (ex,ey,ew,eh) in glasses:
                 cv2.rectangle(face, (ex,ey), (ex+ew,ey+eh), (255, 255, 255), 2)
         else:
-            leftFace = face[:, int(w/2):]
-            leftGray = gray[:, int(w/2):]
-
-            rightFace = face[:, :int(w/2)]
-            rightGray = gray[:, :int(w/2)]
-
-            #check if detected left or right eye
-            left = leftEyeClassifier.detectMultiScale(leftFace, 1.1, 3, minSize=eyeSize)
-            right = rightEyeClassifier.detectMultiScale(rightFace, 1.1, 3, minSize = eyeSize) 
-
-            bothOpen = True
-            blinkThresh = 0.2
-
-
-            #we will assume you blinked if either eye is closed
-            for (ex,ey,ew,eh) in left:
-                color = (0, 255, 0)
-
-                if predict(leftFace[ey:ey+eh,ex:ex+ew],model) < blinkThresh:
-                    bothOpen = False
-                    color = (0, 0, 255)
-                cv2.rectangle(leftFace,(ex,ey),(ex+ew,ey+eh),color,2)
-
-            for (ex,ey,ew,eh) in right:
-                color = (0, 255, 0)
-
-                if predict(rightFace[ey:ey+eh,ex:ex+ew],model) < blinkThresh:
-                    bothOpen = False
-                    color = (0, 0, 255)
-                cv2.rectangle(rightFace,(ex,ey),(ex+ew,ey+eh),color,2)
-
-            #if one eye is predicted to be closed, we assume we blinked
-            if not bothOpen:
-                lastPing = 0
-                lastBlink = time.perf_counter()
+            lastPing = 0
+            lastBlink = time.perf_counter()
 
 
     timeSinceBlink = time.perf_counter() - lastBlink
@@ -139,7 +85,6 @@ if __name__ == "__main__":
 
     #loads ML models and starts webcam
     (faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier) = loadClassifiers()
-    model = loadModel()
     webcam = VideoStream(src=0).start()
 
     #User can adjust these parameters (video size and ping timer threshold)
@@ -147,7 +92,7 @@ if __name__ == "__main__":
     threshold = 8.0
 
     while True:
-        frame = detectEyes(webcam, scale, threshold, model, faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier)
+        frame = detectEyes(webcam, scale, threshold, faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier)
         cv2.imshow("Blink Reminder", frame)
 
         
