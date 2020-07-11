@@ -24,7 +24,7 @@ def loadClassifiers():
     rightEyeClassifier = cv2.CascadeClassifier(os.path.join(currentPath, 'data/haarcascade_righteye_2splits.xml'))
     return (faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier)
 
-def detectEyes(webcam, scale, threshold, faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier):
+def detectEyes(webcam, scale, threshold, sens, faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier):
     global faces
     global lastBlink
     global lastPing
@@ -52,7 +52,7 @@ def detectEyes(webcam, scale, threshold, faceClassifier, glassesClassifier, left
         faceGray = gray[y:y+h,x:x+w]
 
         #check if detected eye in glasses
-        glasses = glassesClassifier.detectMultiScale(faceGray, 1.1, 1, minSize=eyeSize)
+        glasses = glassesClassifier.detectMultiScale(faceGray, 1.1, sens, minSize=eyeSize)
 
         if len(glasses) > 0:
             #draw eye frame
@@ -66,7 +66,8 @@ def detectEyes(webcam, scale, threshold, faceClassifier, glassesClassifier, left
     timeSinceBlink = time.perf_counter() - lastBlink
 
     cv2.putText(frame, "Ping if you haven't blinked for " + str(threshold) + " seconds. (Use W and S to change)", (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-    cv2.putText(frame, str(round(timeSinceBlink, 1)) + "s since last blink", (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, (int)(255 - timeSinceBlink * 10), (int)(timeSinceBlink * 30)), 1)
+    cv2.putText(frame, str(round(timeSinceBlink, 1)) + "s since last blink", (0, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, (int)(255 - timeSinceBlink * 10), (int)(timeSinceBlink * 30)), 1)
+    cv2.putText(frame, "Current sensitivtiy is " + str(sens) + ". Lower is more sensitive. (Use A and D to change)", (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
     alert(timeSinceBlink, threshold)
     return frame
 
@@ -88,9 +89,10 @@ if __name__ == "__main__":
     #User can adjust these parameters (video size and ping timer threshold)
     scale = 1
     threshold = 8.0
+    sens = 2
 
     while True:
-        frame = detectEyes(webcam, scale, threshold, faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier)
+        frame = detectEyes(webcam, scale, threshold, sens, faceClassifier, glassesClassifier, leftEyeClassifier, rightEyeClassifier)
         cv2.imshow("Blink Reminder", frame)
 
         
@@ -105,6 +107,10 @@ if __name__ == "__main__":
             threshold += 0.5
         elif keypress == ord('s') and threshold > 3:
             threshold -= 0.5
+        elif keypress == ord('d') and sens < 7: #Increase/Decrease threshold with arrow keys
+            sens += 1
+        elif keypress == ord('a') and sens > 0:
+            sens -= 1
 
 
     cv2.destroyAllWindows()
