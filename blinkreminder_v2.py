@@ -1,10 +1,8 @@
-import numpy as np
 import cv2
 import time
 import sys
 import os
 from imutils.video import VideoStream
-from PIL import Image
 
 # PyInstaller adds this attribute
 if getattr(sys, 'frozen', False):
