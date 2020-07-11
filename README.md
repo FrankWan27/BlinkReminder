@@ -9,11 +9,12 @@ Face, glasses, left eye, and right eye detection uses [OpenCV with Haar Cascade 
 ![Example](https://github.com/FrankWan27/FrankWan27.github.io/blob/master/images/blink.png)
 ## Installation
 
+If you're on windows, you can easily download and run the latest release here: https://github.com/FrankWan27/BlinkReminder/releases/tag/v1.0
+
 ### Clone or Download
 
-- Clone this repo to your local machine using 
+- If you're on mac or linux, you can clone this repo to your local machine using 
 ```git clone https://github.com/FrankWan27/BlinkReminder.git```
-- Or just download and extract the zip file instead
 
 ### Dependencies
 
